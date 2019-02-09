@@ -50,8 +50,8 @@ if __name__ == '__main__':
         main(argv[1], int(argv[2]), argv[3])
     except (IndexError, ValueError) as e:
         root_logger.info(
-            "Usage:   FTClient <hostname> <n_port> <file>\n"
-            "Example: FTClient   pluto      8080  file.txt"
+            "Usage:   client <hostname> <n_port> <file>\n"
+            "Example: client   pluto      8080  file.txt"
         )
         root_logger.info(e)
     except OSError as e:
