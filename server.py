@@ -3,16 +3,22 @@ import socket
 import random
 
 import logging
-from sys import stderr, argv
+from sys import stderr, argv, version_info
+
+if version_info[0] == 3:
+    tobytes = lambda x: bytes(x, encoding="utf-8")
+    tostr = lambda x: str(x, encoding="utf-8")
+else:
+    tobytes = lambda x: bytes(x)
+    tostr = lambda x: str(x)
 
 root_logger = logging.getLogger("server")
 root_logger.setLevel(logging.INFO)
 root_logger.addHandler(logging.StreamHandler(stderr))
 
 
-def main(port):
+def negotiate(sock, port):
     # negotiation process
-    sock = socket.socket(type=socket.SOCK_STREAM)
     host = socket.gethostname()
     sock.bind((host, port))
     sock.listen(5)  # become a server socket, max 5 connections.
@@ -27,15 +33,16 @@ def main(port):
         b"Negotiation has been detected. "
         b"Please select your special random port "
         # + bytes(f"{r_port:0>5d}", "utf-8")
-        + bytes("{:0>5d}".format(r_port))
+        + tobytes("{:0>5d}".format(r_port))
     )
     root_logger.debug("Sent negotiation port to {}".format(addr))
     conn.close()
+    return r_port
 
+
+def transfer_file(sock, port):
     # file transfer process
-    sock = socket.socket(type=socket.SOCK_DGRAM)
     host = socket.gethostname()
-    port = r_port
     sock.bind((host, port))
 
     with open("output.txt", "wb") as file:
@@ -45,7 +52,7 @@ def main(port):
             # addr is type Tuple[str, int]
 
             file.write(data[:-1])
-            sock.sendto(bytes(str(data)[:-1].upper()), addr)
+            sock.sendto(tobytes(tostr(data)[:-1].upper()), addr)
 
             if data[-1:] == b"T":
                 # At this point the data has been
@@ -57,7 +64,15 @@ def main(port):
 
 if __name__ == '__main__':
     try:
-        main(int(argv[1]))
+        # TCP negotiation
+        ssock = socket.socket(type=socket.SOCK_STREAM)
+        rport = negotiate(ssock, int(argv[1]))
+        ssock.close()
+
+        # UDP file transfer
+        ssock = socket.socket(type=socket.SOCK_DGRAM)
+        transfer_file(ssock, rport)
+        ssock.close()
     except (IndexError, ValueError):
         root_logger.info(
             "Usage:   server <n_port>\n"
@@ -66,3 +81,6 @@ if __name__ == '__main__':
     except OSError as e:
         root_logger.info("Something went wrong.")
         root_logger.debug(e)
+    except (SystemExit, SystemError):
+        # just make sure that the socket is closed.
+        ssock.close()

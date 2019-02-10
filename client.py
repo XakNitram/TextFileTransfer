@@ -1,8 +1,13 @@
 #!/usr/bin/python
 import socket
-
 import logging
-from sys import stderr, argv
+from sys import stderr, argv, version_info
+
+
+if version_info[0] == 3:
+    tostr = lambda x: str(x, encoding="utf-8")
+else:
+    tostr = lambda x: str(x)
 
 # logging setup
 root_logger = logging.getLogger("client")
@@ -22,13 +27,13 @@ def main(host, port, filename):
     conn.send(b"259")
 
     data = conn.recv(1024)  # blocking
-    root_logger.debug(str(data))
+    root_logger.debug(tostr(data))
     conn.close()
 
     # file transfer process
     conn = socket.socket(type=socket.SOCK_DGRAM)
     # SOCK_DGRAM == UDP Socket
-    server = (host, int(str(data)[-5:]))
+    server = (host, int(tostr(data)[-5:]))
 
     with open(filename, "rb") as file:
         sdata = b"F"
@@ -41,13 +46,16 @@ def main(host, port, filename):
             conn.sendto(sdata, server)
             ack, addr = conn.recvfrom(4)
             root_logger.debug(
-                repr(str(ack))
+                repr(tostr(ack))
             )
 
 
 if __name__ == '__main__':
     try:
-        main(argv[1], int(argv[2]), argv[3])
+        hostname = argv[1]
+        if hostname == "localhost":
+            hostname = socket.gethostname()
+        main(hostname, int(argv[2]), argv[3])
     except (IndexError, ValueError) as e:
         root_logger.info(
             "Usage:   client <hostname> <n_port> <file>\n"
