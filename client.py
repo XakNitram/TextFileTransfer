@@ -2,6 +2,7 @@
 import socket
 import logging
 from sys import stderr, argv, version_info
+from os.path import exists
 
 
 if version_info[0] == 3:
@@ -51,6 +52,8 @@ def main(host, port, filename):
 
 
 if __name__ == '__main__':
+    if not exists(argv[3]):
+        root_logger.info(f"No file {argv[3]} found.")
     try:
         hostname = argv[1]
         if hostname == "localhost":
