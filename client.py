@@ -1,12 +1,13 @@
 #!/usr/bin/python
 import socket
 import logging
+from os.path import exists
 from sys import stderr, argv, version_info
 
 
 if version_info[0] == 3:
     tostr = lambda x: str(x, encoding="utf-8")
-else:
+elif version_info[0] == 2:
     tostr = lambda x: str(x)
 
 # logging setup
@@ -51,6 +52,8 @@ def main(host, port, filename):
 
 
 if __name__ == '__main__':
+    if not exists(argv[3]):
+        root_logger.info("No file %s found." % argv[3])
     try:
         hostname = argv[1]
         if hostname == "localhost":

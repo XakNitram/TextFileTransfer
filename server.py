@@ -8,7 +8,7 @@ from sys import stderr, argv, version_info
 if version_info[0] == 3:
     tobytes = lambda x: bytes(x, encoding="utf-8")
     tostr = lambda x: str(x, encoding="utf-8")
-else:
+elif version_info[0] == 2:
     tobytes = lambda x: bytes(x)
     tostr = lambda x: str(x)
 
