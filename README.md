@@ -1,6 +1,6 @@
 # TextFileTransfer
 Python server/client system to transfer text files over UDP.
 
-server \<port>
+python server.py \<port>
 
-client \<hostname> \<port> \<file>
+python client.py \<hostname> \<port> \<file>
