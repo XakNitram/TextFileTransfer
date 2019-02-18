@@ -62,6 +62,10 @@ def receive_file(sock, port):
         root_logger.debug("File Transfer Complete.")
 
     # new system
+    # This may not be accepted because it adds
+    # extra information sent over the network
+    # that are not detailed in the assignment.
+
     # with open("output.txt", "wb") as file:
     #     data, addr = sock.recvfrom(128)  # way more than enough to recieve the length of the file.
     #     sock.sendto(b"File length recieved.", addr)

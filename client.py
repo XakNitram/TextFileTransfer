@@ -52,6 +52,10 @@ def send_file(host, port, filename):
             )
 
     # new system
+    # This may not be accepted because it adds
+    # extra information sent over the network
+    # that are not detailed in the assignment.
+
     # with open(filename, "rb") as file:
     #     # sdata = b"F"
     #     file_data = []
@@ -79,7 +83,11 @@ if __name__ == '__main__':
         hostname = argv[1]
         if hostname == "localhost":
             hostname = socket.gethostname()
+
+        # TCP negotiation
         new_port = get_port(hostname, int(argv[2]))
+
+        # UDP file transfer
         send_file(hostname, new_port, argv[3])
     except (IndexError, ValueError) as e:
         root_logger.info(
