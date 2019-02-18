@@ -85,30 +85,6 @@ def receive_file(sock, port):
                 break
         root_logger.debug("File Transfer Complete.")
 
-    # new system
-    # This may not be accepted because it adds
-    # extra information sent over the network
-    # that are not detailed in the assignment.
-
-    # with open("output.txt", "wb") as file:
-    #     data, addr = sock.recvfrom(128)  # way more than enough to recieve the length of the file.
-    #     sock.sendto(b"File length recieved.", addr)
-    #
-    #     for i in range(int(data)):
-    #         data, addr = sock.recvfrom(5)
-    #         # data is type bytes
-    #         # addr is type Tuple[str, int]
-    #
-    #         file.write(data[:-1])
-    #         sock.sendto(tobytes(tostr(data)[:-1].upper()), addr)
-    #
-    #         if data[-1:] == b"T":
-    #             # At this point the data has been
-    #             # written to the file, so we can
-    #             # safely exit the loop.
-    #             break
-    #     root_logger.debug("File Transfer Complete.")
-
 
 if __name__ == '__main__':
     try:

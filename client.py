@@ -29,8 +29,6 @@ handlr.setFormatter(fmtr)
 
 # add handler to logger
 root_logger.addHandler(handlr)
-
-# just get rid of these since they will never be used again.
 del handlr, fmtr
 
 
@@ -73,30 +71,6 @@ def send_file(host, port, filename):
                 )
             except socket.error:
                 root_logger.info("'' - Malformed data? Timeout?")
-
-    # new system
-    # This may not be accepted because it adds
-    # extra information sent over the network
-    # that are not detailed in the assignment.
-
-    # with open(filename, "rb") as file:
-    #     # sdata = b"F"
-    #     file_data = []
-    #     while True:
-    #         sdata = file.read(4)
-    #         file_data.append(sdata)
-    #         if len(sdata) < 4:
-    #             break
-    #
-    #     conn.sendto(bytes(len(file_data)), server)
-    #     ack, addr = conn.recvfrom(1024)
-    #
-    #     for data in file_data:
-    #         conn.sendto(data, server)
-    #         ack, addr = conn.recvfrom(4)
-    #         root_logger.debug(
-    #             repr(tostr(ack))
-    #         )
 
 
 if __name__ == '__main__':
