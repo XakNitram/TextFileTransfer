@@ -20,16 +20,31 @@ def tostr(x):
         return str(x)
 
 
+# logger setup
 root_logger = logging.getLogger("server")
 root_logger.setLevel(logging.INFO)
-root_logger.addHandler(logging.StreamHandler(stderr))
+
+# handler setup
+# formatters   - https://docs.python.org/3.7/library/logging.html#formatter-objects
+# time formats - https://docs.python.org/3.7/library/time.html#time.strftime
+handlr = logging.StreamHandler(stderr)
+fmtr = logging.Formatter(
+    "(%(asctime)s) %(name)s: "  # prepend message with name and time
+    "%(message)s",              # actual message
+    "%I:%M %p"                   # date format
+)
+handlr.setFormatter(fmtr)
+
+# add handler to logger
+root_logger.addHandler(handlr)
+del handlr, fmtr
 
 
 def select_port(sock, port):
     # negotiation process
     host = socket.gethostname()
     sock.bind((host, port))
-    sock.listen(5)  # become a server socket, max 5 connections.
+    sock.listen(1)  # become a server socket, max 1 connection.
 
     conn, addr = sock.accept()  # blocking
     root_logger.debug("{} connected.".format(addr))
@@ -52,11 +67,12 @@ def receive_file(sock, port):
     # file transfer process
     host = socket.gethostname()
     sock.bind((host, port))
+    sock.settimeout(None)
 
     with open("output.txt", "wb") as file:
         while True:
             data, addr = sock.recvfrom(5)
-            # data is type bytes
+            # data is type bytes in the form b'\w{,4}(F|T)'
             # addr is type Tuple[str, int]
 
             file.write(data[:-1])

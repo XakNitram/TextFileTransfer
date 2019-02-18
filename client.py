@@ -15,12 +15,29 @@ def tostr(x):
 # logging setup
 root_logger = logging.getLogger("client")
 root_logger.setLevel(logging.DEBUG)
-root_logger.addHandler(logging.StreamHandler(stderr))
+
+# handler setup
+# formatters   - https://docs.python.org/3.7/library/logging.html#formatter-objects
+# time formats - https://docs.python.org/3.7/library/time.html#time.strftime
+handlr = logging.StreamHandler(stderr)
+fmtr = logging.Formatter(
+    "(%(asctime)s) %(name)s: "  # prepend message with name and time
+    "%(message)s",              # actual message
+    "%I:%M %p"                   # date format
+)
+handlr.setFormatter(fmtr)
+
+# add handler to logger
+root_logger.addHandler(handlr)
+
+# just get rid of these since they will never be used again.
+del handlr, fmtr
 
 
 def get_port(host, port):
     # negotiation process
     conn = socket.socket(type=socket.SOCK_STREAM)
+
     # SOCK_STREAM == TCP Socket
     server = (host, port)
 
@@ -47,11 +64,15 @@ def send_file(host, port, filename):
                 sdata += b"T"
             else:
                 sdata += b"F"
+
             conn.sendto(sdata, server)
-            ack, addr = conn.recvfrom(4)
-            root_logger.debug(
-                repr(tostr(ack))
-            )
+            try:
+                ack, addr = conn.recvfrom(4)
+                root_logger.debug(
+                    repr(tostr(ack))
+                )
+            except socket.error:
+                root_logger.info("'' - Malformed data? Timeout?")
 
     # new system
     # This may not be accepted because it adds
