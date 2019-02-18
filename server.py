@@ -5,12 +5,20 @@ import random
 import logging
 from sys import stderr, argv, version_info
 
-if version_info[0] == 3:
-    tobytes = lambda x: bytes(x, encoding="ascii")
-    tostr = lambda x: str(x, encoding="ascii")
-elif version_info[0] == 2:
-    tobytes = lambda x: bytes(x)
-    tostr = lambda x: str(x)
+
+def tobytes(x):
+    if version_info[0] == 3:
+        return bytes(x, encoding="ascii")
+    elif version_info[0] == 2:
+        return bytes(x)
+
+
+def tostr(x):
+    if version_info[0] == 3:
+        return str(x, encoding="ascii")
+    elif version_info[0] == 2:
+        return str(x)
+
 
 root_logger = logging.getLogger("server")
 root_logger.setLevel(logging.INFO)

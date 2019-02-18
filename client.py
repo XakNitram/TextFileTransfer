@@ -5,10 +5,12 @@ from os.path import exists
 from sys import stderr, argv, version_info
 
 
-if version_info[0] == 3:
-    tostr = lambda x: str(x, encoding="ascii")
-elif version_info[0] == 2:
-    tostr = lambda x: str(x)
+def tostr(x):
+    if version_info[0] == 3:
+        return str(x, encoding="ascii")
+    elif version_info[0] == 2:
+        return str(x)
+
 
 # logging setup
 root_logger = logging.getLogger("client")
