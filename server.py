@@ -6,8 +6,8 @@ import logging
 from sys import stderr, argv, version_info
 
 if version_info[0] == 3:
-    tobytes = lambda x: bytes(x, encoding="utf-8")
-    tostr = lambda x: str(x, encoding="utf-8")
+    tobytes = lambda x: bytes(x, encoding="ascii")
+    tostr = lambda x: str(x, encoding="ascii")
 elif version_info[0] == 2:
     tobytes = lambda x: bytes(x)
     tostr = lambda x: str(x)
@@ -17,7 +17,7 @@ root_logger.setLevel(logging.INFO)
 root_logger.addHandler(logging.StreamHandler(stderr))
 
 
-def negotiate(sock, port):
+def select_port(sock, port):
     # negotiation process
     host = socket.gethostname()
     sock.bind((host, port))
@@ -29,18 +29,18 @@ def negotiate(sock, port):
     if data == b"259":
         root_logger.debug("Recieved correct message.")
     r_port = random.randint(1024, 65535)
-    conn.send(
-        b"Negotiation has been detected. "
-        b"Please select your special random port "
-        # + bytes(f"{r_port:0>5d}", "utf-8")
-        + tobytes("{:0>5d}".format(r_port))
+    root_logger.info(
+        "Negotiation has been detected. "
+        "Please select your special random port "
+        + str(r_port)
     )
+    conn.send(tobytes(str(r_port)))
     root_logger.debug("Sent negotiation port to {}".format(addr))
     conn.close()
     return r_port
 
 
-def transfer_file(sock, port):
+def receive_file(sock, port):
     # file transfer process
     host = socket.gethostname()
     sock.bind((host, port))
@@ -61,17 +61,37 @@ def transfer_file(sock, port):
                 break
         root_logger.debug("File Transfer Complete.")
 
+    # new system
+    # with open("output.txt", "wb") as file:
+    #     data, addr = sock.recvfrom(128)  # way more than enough to recieve the length of the file.
+    #     sock.sendto(b"File length recieved.", addr)
+    #
+    #     for i in range(int(data)):
+    #         data, addr = sock.recvfrom(5)
+    #         # data is type bytes
+    #         # addr is type Tuple[str, int]
+    #
+    #         file.write(data[:-1])
+    #         sock.sendto(tobytes(tostr(data)[:-1].upper()), addr)
+    #
+    #         if data[-1:] == b"T":
+    #             # At this point the data has been
+    #             # written to the file, so we can
+    #             # safely exit the loop.
+    #             break
+    #     root_logger.debug("File Transfer Complete.")
+
 
 if __name__ == '__main__':
     try:
         # TCP negotiation
         ssock = socket.socket(type=socket.SOCK_STREAM)
-        rport = negotiate(ssock, int(argv[1]))
+        rport = select_port(ssock, int(argv[1]))
         ssock.close()
 
         # UDP file transfer
         ssock = socket.socket(type=socket.SOCK_DGRAM)
-        transfer_file(ssock, rport)
+        receive_file(ssock, rport)
         ssock.close()
     except (IndexError, ValueError):
         root_logger.info(
@@ -83,4 +103,5 @@ if __name__ == '__main__':
         root_logger.debug(e)
     except (SystemExit, SystemError):
         # just make sure that the socket is closed.
+        # it doesn't hurt if the socket is closed twice.
         ssock.close()
